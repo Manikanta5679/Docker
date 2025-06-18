@@ -1,0 +1,10 @@
+server {
+    listen 80;
+    server_name _default_;
+  
+
+    location / {
+        include /etc/nginx/proxy_params;
+        proxy_pass http://chatapp_backend:8000;
+    }
+}

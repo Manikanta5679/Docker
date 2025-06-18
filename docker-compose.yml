@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: ./chatapp_db
+    container_name: chatapp_db1
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./chatapp_db/.env
+    volumes:
+      - chatapp_mysql_data:/var/lib/mysql
+    networks:
+      - chatapp_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./chatapp_backend
+      dockerfile: Dockerfile
+    container_name: chatapp_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./chatapp_backend/.env
+    networks:
+      - chatapp_network
+
+  frontend:
+    build:
+      context: ./chatapp_frontend
+    container_name: chatapp_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - chatapp_network
+
+volumes:
+  chatapp_mysql_data:
+
+networks:
+  chatapp_network:
+    driver: bridge
